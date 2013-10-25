@@ -30,13 +30,23 @@ module ValidatesLengthsFromDatabase
       columns_to_validate.each do |column|
         column_schema = columns.find {|c| c.name == column }
         next if column_schema.nil?
-        next if ![:string, :text].include?(column_schema.type)
-        
-        column_limit = options[:limit][column_schema.type] || column_schema.limit
-        next unless column_limit
+        if [:string, :text].include?(column_schema.type)
+          column_limit = options[:limit][column_schema.type] || column_schema.limit
+          next unless column_limit
 
-        class_eval do
-          validates_length_of column, :maximum => column_limit, :allow_blank => true
+          class_eval do
+            validates column, length: { maximum: column_limit, allow_blank: true }
+          end
+        elsif [:integer].include?(column_schema.type)
+          class_eval do
+            validates column, numericality: { allow_nil: true, only_integer: true, greater_than_or_equal_to: -2147483648, less_than_or_equal_to: 2147483647 }
+          end
+        elsif column_schema.number?
+          class_eval do
+            validates column, numericality: { allow_nil: true}
+          end
+        else
+          next
         end
       end
 
