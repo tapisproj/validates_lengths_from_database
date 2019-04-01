@@ -41,9 +41,9 @@ module ValidatesLengthsFromDatabase
           class_eval do
             validates column, numericality: { allow_nil: true, only_integer: true, greater_than_or_equal_to: -2147483648, less_than_or_equal_to: 2147483647 }
           end
-        elsif column_schema.number?
+        elsif column_schema.type == :float || column_schema.type == :decimal
           class_eval do
-            validates column, numericality: { allow_nil: true}
+            validates column, numericality: { allow_nil: true }
           end
         else
           next
